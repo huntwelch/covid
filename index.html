@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>COVID Historical Daily Activity</title>
+
+    <meta name="twitter:card" content="summary" />
+    <meta name="twitter:creator" content="@peterhuntwelch" />
+    <meta name="twitter:site" content="@peterhuntwelch" />
+
+    <meta
+        property="og:image"
+        content="https://www.stilldrinking.org/covid/image.png"
+        />
+    <meta property="og:url" content="https://www.stilldrinking.org/covid/" />
+    <meta property="og:title" content="COVID Historical Daily Activity" />
+    <meta property="og:type" content="website" />
+    <meta property="og:description" content="Drag the slider for rough approximation of daily covid case activity as a proportion of population at the county level. Data is a bit patchy and the implementation is a bit wonky; this is not for research purposes, but gives an overall impression of the distribution of activity. The suddenly dark areas indicate a somewhat arbitrary cap in measuring the relative activity: as confusingly as possible, the top 3ish percent of daily cases as measured against population ramp up exponetially, so I capped it somewhere in the middle of that rise and it kinda sorta maybe represents an outbreak if that dark patch persists." />
+
+    <script src="covidbydate.js"></script> 
+    <script src="counties.js"></script> 
+    <script src="dragdealer.min.js"></script> 
+    <script src="moment.min.js"></script> 
+    <script src="raphael-min.js"></script> 
+    <style>
+        .container {
+            position: absolute;
+            top: 100px;
+            left: 50%;
+            margin-left: -515px;
+            width: 1030px;
+        }
+        #bar {
+            background: #eee;
+            height: 20px;
+            width: 1030px;
+            position: relative;
+            margin: 10px auto 0;
+            border-radius: 100px;
+        }
+        #handle {
+            border-radius: 100px;
+            background: #999;
+            height: 20px;
+            width: 20px;
+        }
+        #display {
+            font-family: Helvetica;
+            width: 1030px;
+            margin: 0 auto;
+        }
+        #about {
+            font-family: Helvetica;
+            color: #666;
+            width: 900px;
+            position: relative;
+            margin: 0 auto;
+            top: 800px;
+            font-size: 14px;
+            line-height: 1.4;
+        }
+        #map_1 { z-index: 1; }
+        #map_2 { z-index: 2; }
+        #map_3 { z-index: 3; }
+        #map_4 { z-index: 4; }
+        #map_5 { z-index: 5; }
+        #map_6 { z-index: 6; }
+        #map_7 { z-index: 7; }
+    </style>
+</head>
+<body>
+    <div id="map_1" class="container"></div> 
+    <div id="map_2" class="container"></div> 
+    <div id="map_3" class="container"></div> 
+    <div id="map_4" class="container"></div> 
+    <div id="map_5" class="container"></div> 
+    <div id="map_6" class="container"></div> 
+    <div id="map_7" class="container"></div> 
+
+    <div id="display"></div> 
+    <div id="bar" class="dragdealer">
+        <div id="handle" class="handle"></div>
+    </div>
+    <div id="about">Drag the slider for rough approximation of daily covid case activity as a proportion of population at the county level. Data is a bit patchy and the implementation is a bot wonky; this is not for research purposes, but gives an overall impression of distribution of activity. The suddenly dark squares indicate a somewhat arbitrary cap in measuring the relative activity: as confusingly as possible, the top 3ish percent of daily cases as measured against population ramp up exponetially, so I capped it somewhere in the middle of that rise and it kinda sorta maybe represents an outbreak if that dark patch persists.</div>
+    <script>
+        const layers = 2
+
+        const access = []
+
+        for( i = 0; i < layers; i++ ) {
+            document.getElementsByClassName('container')[i].style.opacity = 1 / layers
+            access.push({})
+
+            const map = Raphael(`map_${i+1}`, 1030, 800)
+            const pathCount = counties.length
+            
+            const _counties = [ ...counties ]
+            while(counties) { 
+                const county = _counties.pop()
+                if( !county ) break
+                const thisPath = map.path(county[2]);
+                thisPath.id = county[0];
+                thisPath.name = county[1];
+                thisPath.attr({
+                    stroke: "#FFFFFF",
+                    fill: "#CBCBCB",
+                    "stroke-width": "0.2"
+                });
+                access[i][county[0]] = thisPath
+            }
+        }
+
+        // High is about 81000 with a sharp drop off, mean is ~320
+        const high = 3000
+        const update = (date, index) => {
+            const dt = moment(date).format('YYYY-MM-DD')
+            if( !casesbydate[dt] ) return
+            for( const id in access[index] ) {
+                if( !casesbydate[dt][id] ) {
+                    access[index][id].attr({
+                        fill: "#CBCBCB",
+                    })
+                    continue
+                }
+                const { pop, cases, deaths } = casesbydate[dt][id]
+                let percentage = parseInt(cases / pop * 1000000)
+                if( percentage === Infinity ) continue
+                if( percentage === 0 ) percentage = 1
+                if( percentage > high ) {
+                    access[index][id].attr({
+                        fill: `rgb(0, 0, 0)`,
+                    })
+                    continue
+                } 
+                const coloradj = parseInt(215 * percentage / high)
+                let color = 215 - coloradj
+                
+                access[index][id].attr({
+                    fill: `rgb(255, ${color}, ${color})`,
+                })
+            }
+        }
+
+        const formatdate = (date) => {
+            return moment(date).format("MMM Do YYYY");
+        }
+
+        const display = document.getElementById('display')
+
+        const dates = []
+        const dt = new Date("2020-01-21")
+        const end = new Date("2021-02-28")
+
+        display.innerHTML = formatdate(dt)
+        while (dt <= end) {
+            dates.push(new Date(dt));
+            dt.setDate(dt.getDate() + 1);
+        }
+    
+        let index = 0
+        new Dragdealer('bar', {
+            animationCallback: function(x, y) {
+                let index = parseInt(dates.length * x) - 1
+                if( index < 0 ) {
+                    index = 0
+                }
+                const date = dates[index]
+                update(date, ++index%layers)
+                display.innerHTML = formatdate(date)
+            }
+        });
+
+    </script>
+</body>
+</html>
