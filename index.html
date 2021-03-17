@@ -15,7 +15,7 @@
     <meta property="og:url" content="https://www.stilldrinking.org/covid/" />
     <meta property="og:title" content="COVID Historical Daily Activity" />
     <meta property="og:type" content="website" />
-    <meta property="og:description" content="Drag the slider for rough approximation of daily covid case activity as a proportion of population at the county level. Data is a bit patchy and the implementation is a bit wonky; this is not for research purposes, but gives an overall impression of the distribution of activity. The suddenly dark areas indicate a somewhat arbitrary cap in measuring the relative activity: as confusingly as possible, the top 3ish percent of daily cases as measured against population ramp up exponetially, so I capped it somewhere in the middle of that rise and it kinda sorta maybe represents an outbreak if that dark patch persists." />
+    <meta property="og:description" content="Drag the slider for rough approximation of daily covid case activity as a proportion of population at the county level. Data is a bit patchy and the implementation is a bit wonky; this is not for research purposes, but gives an overall impression of the distribution of activity. The suddenly bright red areas indicate a somewhat arbitrary cap in measuring the relative activity: as confusingly as possible, the top 3ish percent of daily cases as measured against population ramp up exponetially, so I capped it somewhere in the middle of that rise and it kinda sorta maybe represents an outbreak if that dark patch persists." />
 
     <script src="covidbydate.js"></script> 
     <script src="counties.js"></script> 
@@ -23,35 +23,42 @@
     <script src="moment.min.js"></script> 
     <script src="raphael-min.js"></script> 
     <style>
+        html {
+            background: #000;
+            color: #bbb;
+        }
         .container {
             position: absolute;
-            top: 100px;
+            top: 140px;
             left: 50%;
             margin-left: -515px;
             width: 1030px;
         }
-        #bar {
-            background: #eee;
-            height: 20px;
-            width: 1030px;
+        #controls {
             position: relative;
+            width: 900px;
             margin: 10px auto 0;
+        }
+        #bar {
+            background: #333;
+            height: 20px;
+            width: 900px;
+            position: relative;
             border-radius: 100px;
         }
         #handle {
             border-radius: 100px;
-            background: #999;
+            background: #bbb;
             height: 20px;
             width: 20px;
         }
         #display {
             font-family: Helvetica;
-            width: 1030px;
+            width: 900px;
             margin: 0 auto;
         }
         #about {
             font-family: Helvetica;
-            color: #666;
             width: 900px;
             position: relative;
             margin: 0 auto;
@@ -59,6 +66,13 @@
             font-size: 14px;
             line-height: 1.4;
         }
+        #playpause {
+            cursor: pointer;
+            position: absolute;
+            left: -22px;
+            top: 2px;
+        }
+
         #map_1 { z-index: 1; }
         #map_2 { z-index: 2; }
         #map_3 { z-index: 3; }
@@ -66,6 +80,10 @@
         #map_5 { z-index: 5; }
         #map_6 { z-index: 6; }
         #map_7 { z-index: 7; }
+
+        svg {
+            shape-rendering: optimizeSpeed;
+        }
     </style>
 </head>
 <body>
@@ -78,12 +96,20 @@
     <div id="map_7" class="container"></div> 
 
     <div id="display"></div> 
-    <div id="bar" class="dragdealer">
-        <div id="handle" class="handle"></div>
+    <div id="controls">
+        <div id="playpause" title="Play / Pause (P)">&#9658;</div>
+        <div id="bar" class="dragdealer">
+            <div id="handle" class="handle"></div>
+        </div>
     </div>
-    <div id="about">Drag the slider for rough approximation of daily covid case activity as a proportion of population at the county level. Data is a bit patchy and the implementation is a bit wonky; this is not for research purposes, but gives an overall impression of distribution of activity. The suddenly dark squares indicate a somewhat arbitrary cap in measuring the relative activity: as confusingly as possible, the top 3ish percent of daily cases as measured against population ramp up exponetially, so I capped it somewhere in the middle of that rise and it kinda sorta maybe represents an outbreak if that dark patch persists.</div>
+    <div id="about">Drag the slider for rough approximation of daily covid case activity as a proportion of population at the county level. Data is a bit patchy and the implementation is a bit wonky; this is not for research purposes, but gives an overall impression of distribution of activity. The suddenly bright red areas indicate a somewhat arbitrary cap in measuring the relative activity: as confusingly as possible, the top 3ish percent of daily cases as measured against population ramp up exponetially, so I capped it somewhere in the middle of that rise and it kinda sorta maybe represents an outbreak if that dark patch persists. The blank spot that never shows a case in South Dakota is the western half of the Pine Ridge Indian Reservation. I don't know why there's no data for it in the <a href="https://github.com/nytimes/covid-19-data" target="_angry">NYT information</a>.</div>
     <script>
-        const layers = 2
+        const layers = 3 // Major performance loss with each addition
+        const high = 3000 // High is about 81000 with a sharp drop off, mean is ~320
+        const colorbase = 68
+        const colorrange = 170
+
+        const colorfloor = 255 - colorrange
 
         const access = []
 
@@ -102,42 +128,89 @@
                 thisPath.id = county[0];
                 thisPath.name = county[1];
                 thisPath.attr({
-                    stroke: "#FFFFFF",
-                    fill: "#CBCBCB",
+                    stroke: `rgb(0, 0, 0)`,
+                    fill: `rgb(${colorbase}, ${colorbase}, ${colorbase})`,
                     "stroke-width": "0.2"
                 });
                 access[i][county[0]] = thisPath
             }
         }
 
-        // High is about 81000 with a sharp drop off, mean is ~320
-        const high = 3000
+        const newyork = ['36005', '36047', '36061', '36081', '36085']
+        const hoonah = ['02270', '02282']
+        const bristol = ['02282', '02060']
+
         const update = (date, index) => {
             const dt = moment(date).format('YYYY-MM-DD')
             if( !casesbydate[dt] ) return
             for( const id in access[index] ) {
-                if( !casesbydate[dt][id] ) {
-                    access[index][id].attr({
-                        fill: "#CBCBCB",
-                    })
+                
+                let set = null
+                let fakeid = null
+
+                if( newyork.includes(id) ) {
+                    set = newyork 
+                    fakeid = '00000'
+                }
+                else if( hoonah.includes(id) ) {
+                    set = hoonah
+                    fakeid = '11111'
+                }
+                else if( bristol.includes(id) ) {
+                    set = bristol
+                    fakeid = '22222'
+                }
+
+                if( !casesbydate[dt][fakeid || id] ) {
+                    const floorfill = { fill: `rgb(${colorbase}, ${colorbase}, ${colorbase})` }
+                    if( !set ) {
+                        access[index][id].attr(floorfill)
+                    } else {
+                        set.forEach(item => {
+                            access[index][item].attr(floorfill)
+                        })
+                    }
                     continue
                 }
-                const { pop, cases, deaths } = casesbydate[dt][id]
+
+                const { pop, cases } = casesbydate[dt][fakeid || id]
                 let percentage = parseInt(cases / pop * 1000000)
+
                 if( percentage === Infinity ) continue
                 if( percentage === 0 ) percentage = 1
+                if( percentage < 0 ) percentage = 1
+
                 if( percentage > high ) {
-                    access[index][id].attr({
-                        fill: `rgb(0, 0, 0)`,
-                    })
+                    const maxfill = { fill: `rgb(255, 0, 0)` }
+                    if( !set ) {
+                        access[index][id].attr(maxfill)
+                    } else {
+                        set.forEach(item => {
+                            access[index][item].attr(maxfill)
+                        })
+                    }
                     continue
                 } 
-                const coloradj = parseInt(215 * percentage / high)
-                let color = 215 - coloradj
-                
-                access[index][id].attr({
-                    fill: `rgb(255, ${color}, ${color})`,
-                })
+
+                let coloradj = parseInt(colorrange * 2 * percentage / high)
+                let nextadj = 0
+                if (coloradj > colorrange) {
+                    nextadj = coloradj - colorrange 
+                    coloradj = colorrange
+                }
+
+                let red = colorfloor + coloradj
+                let green = colorfloor + coloradj - nextadj
+
+                const fill = { fill: `rgb(${red}, ${green}, ${colorfloor})` }
+
+                if( !set ) {
+                    access[index][id].attr(fill)
+                } else {
+                    set.forEach(item => {
+                        access[index][item].attr(fill)
+                    })
+                }               
             }
         }
 
@@ -149,7 +222,7 @@
 
         const dates = []
         const dt = new Date("2020-01-21")
-        const end = new Date("2021-02-28")
+        const end = new Date("2021-02-29")
 
         display.innerHTML = formatdate(dt)
         while (dt <= end) {
@@ -158,7 +231,7 @@
         }
     
         let index = 0
-        new Dragdealer('bar', {
+        const dragger = new Dragdealer('bar', {
             animationCallback: function(x, y) {
                 let index = parseInt(dates.length * x) - 1
                 if( index < 0 ) {
@@ -170,6 +243,40 @@
             }
         });
 
+        let playing = false
+        const play = () => {
+            if (!playing) return
+            const val = 1 / dates.length
+            dragger.setValue(dragger.getValue()[0] + val)
+            setTimeout(play, 100)
+        }
+
+        const playpause = document.getElementById('playpause')
+
+        const playtoggle = () => {
+            playing = !playing
+            playpause.innerHTML = playing ? '&#10074;&#10074;' : '&#9658;'
+            play()
+        }
+
+        playpause.addEventListener('click', (event) => {
+            playtoggle()
+        })
+
+        window.addEventListener('keydown', (event) => {
+            console.log(event.keyCode)
+            if( event.keyCode === 39 ) {
+                const val = 1 / dates.length
+                dragger.setValue(dragger.getValue()[0] + val)
+            }
+            if( event.keyCode === 37 ) {
+                const val = 1 / dates.length
+                dragger.setValue(dragger.getValue()[0] - val)
+            }
+            if( event.keyCode === 80 ) {
+                playtoggle()
+            }
+        })
     </script>
 </body>
 </html>
