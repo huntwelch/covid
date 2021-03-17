@@ -10,12 +10,12 @@
 
     <meta
         property="og:image"
-        content="https://www.stilldrinking.org/covid/image.png"
+        content="https://www.stilldrinking.org/covid/image2.png"
         />
     <meta property="og:url" content="https://www.stilldrinking.org/covid/" />
     <meta property="og:title" content="COVID Historical Daily Activity" />
     <meta property="og:type" content="website" />
-    <meta property="og:description" content="Drag the slider for rough approximation of daily covid case activity as a proportion of population at the county level. Data is a bit patchy and the implementation is a bit wonky; this is not for research purposes, but gives an overall impression of the distribution of activity. The suddenly bright red areas indicate a somewhat arbitrary cap in measuring the relative activity: as confusingly as possible, the top 3ish percent of daily cases as measured against population ramp up exponetially, so I capped it somewhere in the middle of that rise and it kinda sorta maybe represents an outbreak if that dark patch persists." />
+    <meta property="og:description" content="Drag the slider for rough approximation of daily covid case activity as a proportion of population at the county level. Data is a bit patchy and the implementation is a bit wonky; this is not for research purposes, but gives an overall impression of the distribution of activity. The suddenly bright red areas indicate a somewhat arbitrary cap in measuring the relative activity: as confusingly as possible, the top 3ish percent of daily cases as measured against population ramp up exponetially, so I capped it somewhere in the middle of that rise and it kinda sorta maybe represents an outbreak if the patch persists." />
 
     <script src="covidbydate.js"></script> 
     <script src="counties.js"></script> 
@@ -102,7 +102,7 @@
             <div id="handle" class="handle"></div>
         </div>
     </div>
-    <div id="about">Drag the slider for rough approximation of daily covid case activity as a proportion of population at the county level. Data is a bit patchy and the implementation is a bit wonky; this is not for research purposes, but gives an overall impression of distribution of activity. The suddenly bright red areas indicate a somewhat arbitrary cap in measuring the relative activity: as confusingly as possible, the top 3ish percent of daily cases as measured against population ramp up exponetially, so I capped it somewhere in the middle of that rise and it kinda sorta maybe represents an outbreak if that dark patch persists. The blank spot that never shows a case in South Dakota is the western half of the Pine Ridge Indian Reservation. I don't know why there's no data for it in the <a href="https://github.com/nytimes/covid-19-data" target="_angry">NYT information</a>.</div>
+    <div id="about">Drag the slider for rough approximation of daily covid case activity as a proportion of population at the county level. Data is a bit patchy and the implementation is a bit wonky; this is not for research purposes, but gives an overall impression of distribution of activity. The suddenly bright red areas indicate a somewhat arbitrary cap in measuring the relative activity: as confusingly as possible, the top 3ish percent of daily cases as measured against population ramp up exponetially, so I capped it somewhere in the middle of that rise and it kinda sorta maybe represents an outbreak if the patch persists. Some sudden statewide spikes are reporting anamolies, often a change in how cases are recorded. The blank spot that never shows a case in South Dakota is the western half of the Pine Ridge Indian Reservation. I don't know why there's no data for it in the <a href="https://github.com/nytimes/covid-19-data" target="_angry">NYT information</a>.</div>
     <script>
         const layers = 3 // Major performance loss with each addition
         const high = 3000 // High is about 81000 with a sharp drop off, mean is ~320
