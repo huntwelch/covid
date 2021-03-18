@@ -245,9 +245,12 @@
 
         let playing = false
         const play = () => {
-            if (!playing) return
+            if( !playing ) return
             const val = 1 / dates.length
             dragger.setValue(dragger.getValue()[0] + val)
+            if( dragger.getValue()[0] === 1 && playing ) {
+                playtoggle()
+            }
             setTimeout(play, 100)
         }
 
@@ -264,12 +267,17 @@
         })
 
         window.addEventListener('keydown', (event) => {
-            console.log(event.keyCode)
             if( event.keyCode === 39 ) {
+                if( playing ) {
+                    playtoggle() 
+                }
                 const val = 1 / dates.length
                 dragger.setValue(dragger.getValue()[0] + val)
             }
             if( event.keyCode === 37 ) {
+                if( playing ) {
+                    playtoggle() 
+                }
                 const val = 1 / dates.length
                 dragger.setValue(dragger.getValue()[0] - val)
             }
