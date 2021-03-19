@@ -60,20 +60,39 @@ class Mapper {
 
   keybind(event) {
     const current = this.dragger.getValue()[0]
-    if( event.keyCode === 39 ) {
-      if( this.playing ) {
-        this.playtoggle() 
-      }
-      this.dragger.setValue(current + this.dateincrement)
-    }
-    if( event.keyCode === 37 ) {
-      if( this.playing ) {
-        this.playtoggle() 
-      }
-      this.dragger.setValue(current - this.dateincrement)
-    }
-    if( event.keyCode === 80 ) {
-      this.playtoggle()
+
+    switch( event.keyCode ) {
+      case 39:
+        if( this.playing ) {
+          this.playtoggle() 
+        }
+        this.dragger.setValue(current + this.dateincrement)
+        break
+
+      case 37:
+        if( this.playing ) {
+          this.playtoggle() 
+        }
+        this.dragger.setValue(current - this.dateincrement)
+        break
+
+      case 32:
+      case 80:
+        event.preventDefault()
+        this.playtoggle()
+        break
+
+      case 77:
+        this.togglemask()
+        break
+
+      case 49:
+      case 50:
+      case 51:
+      case 52:
+      case 53:
+        this.updatelag(null, event.keyCode - 48)    
+        break
     }
   }
 
@@ -92,9 +111,8 @@ class Mapper {
     }
   }
 
-  updatelag(node) {
-    const index = this.getindex(node)
-    this.layers = index  
+  updatelag(node, index) {
+    this.layers = index || this.getindex(node)
     this.updatelagdisplay()
     this.updateopacity()
   }

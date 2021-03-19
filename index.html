@@ -21,7 +21,7 @@
     <script src="js/moment.min.js"></script> 
     <script src="js/raphael-min.js"></script> 
 
-    <link rel="stylesheet" href="css/styles.css?cb=1">
+    <link rel="stylesheet" href="css/styles.css?cb=3">
     <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
 </head>
 <body>
@@ -37,12 +37,12 @@
     <div id="controls">
         <div id="playpause" title="Play / Pause (P)">&#9658;</div>
         <div id="bar" class="dragdealer">
-            <div id="handle" class="handle"></div>
+            <div id="handle" class="handle" title="Drag with mouse or use left/right arrow keys"></div>
         </div>
-        <div id="masktoggle">
+        <div id="masktoggle" title="Show mask usage (M)">
             Mask Usage <span id="maskicon">&#8776;</span>
         </div>
-        <div id="lag">
+        <div id="lag" title="Change trailing maps (1-5)">
             Lag
             <span>&#9679;</span><span>&#9679;</span><span>&#9679;</span><span>&#9675;</span><span>&#9675;</span>
         </div>
@@ -74,6 +74,6 @@
         Mask usage is based on a single, recent data collection, so does not change
         over time.
     </div>
-    <script type="module" src="js/engine.js?cb=1"></script> 
+    <script type="module" src="js/engine.js?cb=5"></script> 
 </body>
 </html>

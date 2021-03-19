@@ -29,6 +29,11 @@ html {
   background: #bbb;
   height: 20px;
   width: 20px;
+  cursor: grab;
+}
+#bar:active,
+#handle:active {
+  cursor: grabbing;
 }
 #display {
   width: 900px;
