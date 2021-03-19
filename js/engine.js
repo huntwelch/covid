@@ -5,6 +5,7 @@ import maskusage from './data/maskusage.js'
 class Mapper {
   constructor() {
     this.layers = 3 // Major performance loss with each addition
+    this.maxlayers = 5
     this.high = 3000 // High is about 81000 with a sharp drop off, mean is ~320
     this.colorbase = 68
     this.colorrange = 170
@@ -19,6 +20,7 @@ class Mapper {
     this.masktoggle = this.dom('masktoggle')
     this.maskicon = this.dom('maskicon')
     this.masklayer = this.dom('mask_map')
+    this.lags = this.dom('lag').getElementsByTagName('span')
 
     this.attachevents()
 
@@ -37,7 +39,7 @@ class Mapper {
 
     this.access = []
     this.maps = document.getElementsByClassName('container')
-
+    this.updateopacity()
     
     this.dates = []
     this.dt = new Date("2020-01-21")
@@ -75,10 +77,36 @@ class Mapper {
     }
   }
 
+  getindex(node) {
+    return Array.from(node.parentNode.children).indexOf(node) + 1
+  }
+
+  updatelagdisplay() {
+    for( let lag of this.lags ) {
+      const index = this.getindex(lag)
+      if( index <= this.layers ) {
+        lag.innerHTML = '&#9679;'
+      } else {
+        lag.innerHTML = '&#9675;'
+      }
+    }
+  }
+
+  updatelag(node) {
+    const index = this.getindex(node)
+    this.layers = index  
+    this.updatelagdisplay()
+    this.updateopacity()
+  }
+
   attachevents() {
     this.playpause.addEventListener('click', this.playtoggle.bind(this))
     this.masktoggle.addEventListener('click', this.togglemask.bind(this))
     window.addEventListener('keydown', this.keybind.bind(this))
+
+    for( let lag of this.lags ) {
+      lag.addEventListener('click', (event) => this.updatelag(lag))
+    }
   }
 
   dom(id) {
@@ -97,9 +125,19 @@ class Mapper {
     return path
   }
 
+  updateopacity() {
+    for( let index = 0; index < this.maxlayers; index++ ) {
+      const map = this.maps[index]
+      if( index >= this.layers ) {
+        map.style.opacity = 0
+      } else {
+        map.style.opacity = (0.8 / this.layers) + 0.2
+      }
+    }
+  }
+
   initcountymap() {
-    for( let index = 0; index < this.layers; index++ ) {
-      this.maps[index].style.opacity = 1 / this.layers
+    for( let index = 0; index < this.maxlayers; index++ ) {
       this.access.push({})
       const style = {
         stroke: `rgb(0, 0, 0)`,

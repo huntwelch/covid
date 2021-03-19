@@ -58,14 +58,21 @@ html {
   display: none;
   z-index: 11;
 }
+#lag {
+  position: absolute;
+  top: -28px;
+  right: 200px;
+}
+#lag span {
+  cursor: pointer;
+  padding: 5px;
+}
 
-#map_1 { z-index: 1; }
-#map_2 { z-index: 2; }
+#map_1 { z-index: 5; }
+#map_2 { z-index: 4; }
 #map_3 { z-index: 3; }
-#map_4 { z-index: 4; }
-#map_5 { z-index: 5; }
-#map_6 { z-index: 6; }
-#map_7 { z-index: 7; }
+#map_4 { z-index: 2; }
+#map_5 { z-index: 1; }
 
 svg {
   shape-rendering: optimizeSpeed;
