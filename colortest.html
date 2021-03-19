@@ -26,5 +26,57 @@
    <div id="id_3"></div>
    <div id="id_4"></div>
    <div id="id_5"></div>
+   <script>
+    function calculateTransparentColor(foregroundColor, backgroundColor, opacity) {
+        if (opacity < 0.0 || opacity > 1.0) {
+            alert("assertion, opacity should be between 0 and 1");
+        }
+        opacity = opacity * 1.0; // to make it float
+        let foregroundRGB = colorHexToRGB(foregroundColor);
+        let backgroundRGB = colorHexToRGB(backgroundColor);
+        let finalRed = Math.round(backgroundRGB.r * (1-opacity) + foregroundRGB.r * opacity);
+        let finalGreen = Math.round(backgroundRGB.g * (1-opacity) + foregroundRGB.g * opacity);
+        let finalBlue = Math.round(backgroundRGB.b * (1-opacity) + foregroundRGB.b * opacity);
+        return colorRGBToHex(finalRed, finalGreen, finalBlue);
+    }
+
+    var COLOR_REGEX = /^#([0-9a-fA-F]{2})([0-9a-fA-F]{2})([0-9a-fA-F]{2})$/;
+    function colorHexToRGB(htmlColor) {
+         
+        let arrRGB = htmlColor.match(COLOR_REGEX);
+        if (arrRGB == null) {
+            alert("Invalid color passed, the color should be in the html format. Example: #ff0033");
+        }
+        let red = parseInt(arrRGB[1], 16);
+        let green = parseInt(arrRGB[2], 16);
+        let blue = parseInt(arrRGB[3], 16);
+        return {"r":red, "g":green, "b":blue};
+    }
+
+    function colorRGBToHex(red, green, blue) {
+        if (red < 0 || red > 255 || green < 0 || green > 255 || blue < 0 || blue > 255) {
+            alert("Invalid color value passed. Should be between 0 and 255.");
+        }
+
+        let hexRed = formatHex(red.toString(16));
+        let hexGreen = formatHex(green.toString(16));
+        let hexBlue = formatHex(blue.toString(16));
+
+        return "#" + hexRed + hexGreen + hexBlue;
+    }
+
+    function formatHex(value) {
+        value = value + "";
+        if (value.length == 1) {
+            return "0" + value;
+        }
+        return value;
+    }
+
+    // Now we test it!
+    let theColor = calculateTransparentColor('#ff0000', '#ff0000', 0.5)
+    console.log("The color #ff0000 on a background of #ff0000 with 50% opacity produces: " + theColor);
+
+   </script>
 </body>
 </html>
