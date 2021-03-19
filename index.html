@@ -49,6 +49,7 @@
     </div>
 
     <div id="about">
+        <p>
         Drag the slider for rough approximation of daily covid case activity
         as a proportion of population at the county level. Data is a bit patchy
         and the implementation is a bit wonky; this is not for research purposes,
@@ -63,6 +64,15 @@
         half of the Pine Ridge Indian Reservation. I don't know why there's no
         data for it in the
         <a href="https://github.com/nytimes/covid-19-data" target="_angry">NYT information</a>.
+        </p>
+        <p>
+        The "Lag" control sets the number of layers. If it's more than one,
+        it will update transparent layers sequentially, creating a sort of trailing
+        average effect. 
+        </p>
+        <p>
+        Mask usage is based on a single, recent data collection, so does not change
+        over time.
     </div>
     <script type="module" src="js/engine.js?cb=1"></script> 
 </body>
