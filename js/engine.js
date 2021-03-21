@@ -1,6 +1,7 @@
 import counties from './data/counties.js'
 import casesbydate from './data/covidbydate.js'
 import maskusage from './data/maskusage.js'
+import enddate from './enddate.js'
 
 class Mapper {
   constructor() {
@@ -43,13 +44,14 @@ class Mapper {
     
     this.dates = []
     this.dt = new Date("2020-01-21")
-    this.end = new Date("2021-03-17")
+    this.end = new Date(enddate)
     
     this.display.innerHTML = this.formatdate(this.dt)
     while (this.dt <= this.end) {
       this.dates.push(new Date(this.dt));
       this.dt.setDate(this.dt.getDate() + 1);
     }
+    this.dates.push(new Date(this.dt));
     this.dateincrement = 1 / this.dates.length
 
     this.initcountymap()

@@ -54,5 +54,5 @@ with open('us-counties.csv', 'r') as f:
         if _cases > 0:
             fipslast[fips] = _cases
 
-print 'const casesbydate = %s' % bydate
+print 'const casesbydate = %s\nexport default casesbydate' % bydate
 
