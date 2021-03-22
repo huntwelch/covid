@@ -17,23 +17,23 @@
     <meta property="og:type" content="website" />
     <meta property="og:description" content="Approximation of daily covid case activity as a proportion of population at the county level over time." />
 
-    <script src="js/dragdealer.min.js"></script> 
-    <script src="js/moment.min.js"></script> 
-    <script src="js/raphael-min.js"></script> 
+    <script src="js/dragdealer.min.js"></script>
+    <script src="js/moment.min.js"></script>
+    <script src="js/raphael-min.js"></script>
 
     <link rel="stylesheet" href="css/styles.css?cb=3">
     <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
 </head>
 <body>
-    <div id="map_1" class="container"></div> 
-    <div id="map_2" class="container"></div> 
-    <div id="map_3" class="container"></div> 
-    <div id="map_4" class="container"></div> 
-    <div id="map_5" class="container"></div> 
+    <div id="map_1" class="container"></div>
+    <div id="map_2" class="container"></div>
+    <div id="map_3" class="container"></div>
+    <div id="map_4" class="container"></div>
+    <div id="map_5" class="container"></div>
 
-    <div id="mask_map" class="alt-container"></div> 
+    <div id="mask_map" class="alt-container"></div>
 
-    <div id="display"></div> 
+    <div id="display"></div>
     <div id="controls">
         <div id="playpause" title="Play / Pause (P)">&#9658;</div>
         <div id="bar" class="dragdealer">
@@ -68,12 +68,26 @@
         <p>
         The "Lag" control sets the number of layers. If it's more than one,
         it will update transparent layers sequentially, creating a sort of trailing
-        average effect. 
+        average effect.
         </p>
         <p>
         Mask usage is based on a single, recent data collection, so does not change
         over time.
     </div>
-    <script type="module" src="js/engine.js?cb=5"></script> 
+    <?
+        $scripts = array(
+            "js/data/counties.js",
+            "js/data/covidbydate.js",
+            "js/data/maskusage.js",
+            "js/enddate.js",
+            "module" => "js/engine.js"
+        );
+
+        foreach($scripts as $key => $script) {
+            $hash = md5(file_get_contents($script));
+            $type = $key === "module" ? " type='module'" : "";
+            echo "<script$type src='$hash/$script'></script>\n\t";
+        }
+    ?>
 </body>
 </html>

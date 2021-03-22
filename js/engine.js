@@ -1,8 +1,3 @@
-import counties from './data/counties.js'
-import casesbydate from './data/covidbydate.js'
-import maskusage from './data/maskusage.js'
-import enddate from './enddate.js'
-
 class Mapper {
   constructor() {
     this.layers = 3 // Major performance loss with each addition
@@ -53,6 +48,9 @@ class Mapper {
     }
     this.dates.push(new Date(this.dt));
     this.dateincrement = 1 / this.dates.length
+
+    console.log(enddate)
+    console.log(this.dates)
 
     this.initcountymap()
     this.drawmaskusage()
@@ -239,7 +237,10 @@ class Mapper {
 
   update(date, index) {
     const dt = moment(date).format('YYYY-MM-DD')
-    if( !casesbydate[dt] ) return
+    if( !casesbydate[dt] ) {
+      console.log(dt)
+      return
+    }
   
     for( const id in this.access[index] ) {
   

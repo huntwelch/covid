@@ -17,42 +17,46 @@ bristol = ['02282', '02060']
 
 with open('us-counties.csv', 'r') as f:
     csv = reader(f)
-    
+
     for row in csv:
-        date, county, state, fips, cases, deaths = row
+        if not row: continue
+        try:
+            date, county, state, fips, cases, deaths = row
 
-        if not date: continue
-         
-        if county == 'New York City':
-            fips = '00000'
-        if county == 'Yakutat plus Hoonah-Angoon':
-            fips = '11111'
-        if county == 'Bristol Bay plus Lake and Peninsula':
-            fips = '22222'
+            if not date: continue
 
-        if not fips: continue
+            if county == 'New York City':
+                fips = '00000'
+            if county == 'Yakutat plus Hoonah-Angoon':
+                fips = '11111'
+            if county == 'Bristol Bay plus Lake and Peninsula':
+                fips = '22222'
 
-        if date not in bydate:
-            bydate[date] = {}
-        if fips not in bydate[date]:
-            total = 0
-            if fips in totalpop:
-                total = totalpop[fips]
-            if fips == '00000':
-                total = sum([totalpop[x] for x in newyork])
-            if fips == '11111':
-                total = sum([totalpop[x] for x in hoonah])
-            if fips == '22222':
-                total = sum([totalpop[x] for x in bristol])
-            bydate[date][fips] = { 'pop': total, 'cases': 0 }
-        if fips not in fipslast:
-            fipslast[fips] = 0
-            
-        _cases = int(cases or 0)
-        bydate[date][fips]['cases'] = _cases - fipslast[fips]
+            if not fips: continue
 
-        if _cases > 0:
-            fipslast[fips] = _cases
+            if date not in bydate:
+                bydate[date] = {}
+            if fips not in bydate[date]:
+                total = 0
+                if fips in totalpop:
+                    total = totalpop[fips]
+                if fips == '00000':
+                    total = sum([totalpop[x] for x in newyork])
+                if fips == '11111':
+                    total = sum([totalpop[x] for x in hoonah])
+                if fips == '22222':
+                    total = sum([totalpop[x] for x in bristol])
+                bydate[date][fips] = { 'pop': total, 'cases': 0 }
+            if fips not in fipslast:
+                fipslast[fips] = 0
 
-print 'const casesbydate = %s\nexport default casesbydate' % bydate
+            _cases = int(cases or 0)
+            bydate[date][fips]['cases'] = _cases - fipslast[fips]
+
+            if _cases > 0:
+                fipslast[fips] = _cases
+        except Exception as e:
+            raise
+
+print 'const casesbydate = %s' % bydate
 
